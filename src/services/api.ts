@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost/CodeVault/index.php";
+const BASE_URL = "http://10.65.101.210/CodeVault/index";
 const FILE_BASE = "http://localhost/CodeVault";
 
 const getUserId = () => {

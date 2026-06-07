@@ -17,6 +17,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage }) => {
   }
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const initial = (user.full_name || "U").charAt(0).toUpperCase();
 
@@ -25,12 +26,10 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage }) => {
     router.push("/login", "root");
   };
 
-  // Init feather icons after render
   useEffect(() => {
     feather.replace();
   }, [activePage]);
 
-  // Close dropdowns when clicking outside
   useEffect(() => {
     const close = () => {
       setProfileOpen(false);
@@ -66,112 +65,180 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage }) => {
       />
 
       <style>{`
-          body { overflow-x: hidden; }
-          .navbar {
-            position: fixed !important;
-            top: 0; left: 0; right: 0;
-            z-index: 999;
-            height: 63px;
-            display: flex !important;
-            flex-direction: row !important;
-            padding: 0 !important;
-            background: #fff;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-          }
-          .navbar-brand-wrapper {
-            width: 250px !important; min-width: 250px !important; max-width: 250px !important;
-            flex-shrink: 0 !important;
-            display: flex !important; align-items: center !important;
-            background: #fff; z-index: 1000;
-          }
-          .navbar .navbar-menu-wrapper {
-            flex: 1 1 0% !important; min-width: 0 !important;
-            display: flex !important; align-items: stretch !important; overflow: visible !important;
-          }
-          .sidebar {
-            position: fixed !important; top: 63px !important; left: 0 !important;
-            height: calc(100vh - 63px) !important; width: 250px !important;
-            z-index: 100 !important; overflow-y: auto !important; background: #fff !important;
-          }
-          .sidebar-brand-wrapper { display: none !important; }
-          .page-body-wrapper { margin-left: 250px !important; padding-top: 63px !important; min-height: 100vh; }
-          .page-body-wrapper {
-          margin-left: 250px !important;
+        html, body { overflow-x: hidden !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+        body { overflow-x: hidden; margin: 0 !important; padding: 0 !important; }
+
+        /* ✅ GLOBAL — container-xxl max-width override */
+        .container-xxl, .container-xl, .container-lg, .container-md, .container-sm, .container-fluid {
+          max-width: 100% !important;
+          width: 100% !important;
+        }
+
+        /* ✅ OVERRIDE — pigilan ang template na mag-set ng margin/padding sa lahat ng containers */
+        .page-body-wrapper {
+          margin-left: 0 !important;
+          padding-top: 0 !important;
+        }
+        .container-scroller {
+          padding: 0 !important;
+          margin: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+        }
+        .cv-body-wrapper {
+          padding-left: 0 !important;
+          padding-right: 0 !important;
+          box-sizing: border-box !important;
+          overflow-x: hidden !important;
+        }
+        .content-wrapper {
+          padding-left: 1.5rem !important;
+          padding-right: 1.5rem !important;
+          overflow-x: hidden !important;
+        }
+
+        .navbar {
+          position: fixed !important;
+          top: 0; left: 0; right: 0;
+          z-index: 999;
+          height: 63px;
+          display: flex !important;
+          flex-direction: row !important;
+          padding: 0 !important;
+          background: #fff;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .navbar-brand-wrapper {
+          width: 250px !important;
+          min-width: 250px !important;
+          flex-shrink: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          padding-right: 12px !important;
+          background: #fff;
+          z-index: 1000;
+        }
+        .navbar .navbar-menu-wrapper {
+          flex: 1 1 0% !important;
+          min-width: 0 !important;
+          display: flex !important;
+          align-items: stretch !important;
+          overflow: visible !important;
+        }
+
+        .hamburger-btn {
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          padding: 6px 8px;
+          border-radius: 6px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 5px;
+          flex-shrink: 0;
+          transition: background 0.2s;
+        }
+        .hamburger-btn:hover { background: #f0f2ff; }
+        .hamburger-btn span {
+          display: block;
+          width: 22px;
+          height: 2px;
+          background: #504B8E;
+          border-radius: 2px;
+        }
+
+        .sidebar {
+          position: fixed !important;
+          top: 63px !important;
+          left: 0 !important;
+          height: calc(100vh - 63px) !important;
+          width: 250px !important;
+          z-index: 100 !important;
+          overflow-y: auto !important;
+          background: #fff !important;
+          transition: transform 0.25s ease;
+        }
+        .sidebar-brand-wrapper { display: none !important; }
+
+        /* ✅ CUSTOM wrapper — hindi naaapektuhan ng template CSS */
+        .cv-body-wrapper {
           padding-top: 63px !important;
-          height: 100vh;
+          min-height: 100vh;
           overflow: hidden;
           display: flex;
           flex-direction: column;
-          }
-
-          .main-panel {
+          transition: margin-left 0.25s ease, width 0.25s ease;
+          box-sizing: border-box !important;
+        }
+        .main-panel {
           flex: 1;
           display: flex;
           flex-direction: column;
           overflow-y: auto;
           overflow-x: hidden;
-          }
-
-          .content-wrapper {
+        }
+        .content-wrapper {
           flex: 1;
           background: #f9faff;
           position: relative;
           z-index: 1;
           padding-bottom: 20px;
-          }
+        }
+        .footer { margin-top: auto; background: #fff; z-index: 2; }
 
-          .footer {
-          margin-top: auto;
-          background: #fff;
-          z-index: 2;
-          }
+        .sidebar .nav .nav-item.menu-items > .nav-link,
+        .sidebar .nav .nav-item.menu-items > button.nav-link {
+          background: transparent !important; color: #3e4b5b !important;
+        }
+        .sidebar .nav .nav-item.menu-items.active > .nav-link,
+        .sidebar .nav .nav-item.menu-items.active > button.nav-link {
+          background: linear-gradient(135deg,#6571ff 0%,#504B8E 100%) !important;
+          border-radius: 8px !important; color: #fff !important;
+        }
+        .sidebar .nav .nav-item.menu-items.active > button.nav-link .menu-title,
+        .sidebar .nav .nav-item.menu-items.active > button.nav-link i,
+        .sidebar .nav .nav-item.menu-items.active > button.nav-link svg {
+          color: #fff !important; stroke: #fff !important; fill: none !important;
+        }
+        .sidebar .nav .nav-item.menu-items:not(.active) > button.nav-link:hover {
+          background: #f0f2ff !important; border-radius: 8px !important; color: #6571ff !important;
+        }
+        .sidebar .nav .nav-item.nav-category > .nav-link { color: #9da5c9 !important; }
 
-          /* Sidebar nav items */
-          .sidebar .nav .nav-item.menu-items > .nav-link,
-          .sidebar .nav .nav-item.menu-items > button.nav-link {
-            background: transparent !important; color: #3e4b5b !important;
-          }
-          .sidebar .nav .nav-item.menu-items.active > .nav-link,
-          .sidebar .nav .nav-item.menu-items.active > button.nav-link {
-            background: linear-gradient(135deg,#6571ff 0%,#504B8E 100%) !important;
-            border-radius: 8px !important; color: #fff !important;
-          }
-          .sidebar .nav .nav-item.menu-items.active > button.nav-link .menu-title,
-          .sidebar .nav .nav-item.menu-items.active > button.nav-link i,
-          .sidebar .nav .nav-item.menu-items.active > button.nav-link svg {
-            color: #fff !important; stroke: #fff !important; fill: none !important;
-          }
-          .sidebar .nav .nav-item.menu-items:not(.active) > button.nav-link:hover {
-            background: #f0f2ff !important; border-radius: 8px !important; color: #6571ff !important;
-          }
-          .sidebar .nav .nav-item.nav-category > .nav-link { color: #9da5c9 !important; }
+        .nav-item.nav-search .input-group {
+          display: flex !important; align-items: center !important; flex-wrap: nowrap !important;
+          background: #e8ecff !important; border: 1px solid #d0d5f5 !important;
+          border-radius: 20px !important; padding: 4px 12px !important;
+          max-width: 400px !important; height: 38px !important;
+        }
+        .nav-item.nav-search .input-group .input-group-text {
+          background: transparent !important; border: none !important;
+          padding: 0 6px 0 0 !important; color: #6571ff !important; font-size: 18px !important;
+        }
+        .nav-item.nav-search .input-group input.form-control {
+          background: transparent !important; border: none !important;
+          box-shadow: none !important; outline: none !important;
+          color: #333 !important; font-size: 0.875rem !important; padding: 0 !important; flex: 1 !important;
+        }
+        .nav-item.nav-search .input-group input.form-control::placeholder { color: #9da5c9 !important; }
 
-          /* Search bar */
-          .nav-item.nav-search .input-group {
-            display: flex !important; align-items: center !important; flex-wrap: nowrap !important;
-            background: #e8ecff !important; border: 1px solid #d0d5f5 !important;
-            border-radius: 20px !important; padding: 4px 12px !important;
-            max-width: 400px !important; height: 38px !important;
-          }
-          .nav-item.nav-search .input-group .input-group-text {
-            background: transparent !important; border: none !important;
-            padding: 0 6px 0 0 !important; color: #6571ff !important; font-size: 18px !important;
-          }
-          .nav-item.nav-search .input-group input.form-control {
-            background: transparent !important; border: none !important;
-            box-shadow: none !important; outline: none !important;
-            color: #333 !important; font-size: 0.875rem !important; padding: 0 !important; flex: 1 !important;
-          }
-          .nav-item.nav-search .input-group input.form-control::placeholder { color: #9da5c9 !important; }
-
-          /* Dropdown */
-          .navbar-dropdown { min-width: 200px; }
-          .show { display: block !important; }
-        `}</style>
+        .navbar-dropdown { min-width: 200px; }
+        .show { display: block !important; }
+      `}</style>
 
       <div className="container-scroller">
         {/* SIDEBAR */}
-        <nav className="sidebar sidebar-offcanvas" id="sidebar">
+        <nav
+          className="sidebar sidebar-offcanvas"
+          id="sidebar"
+          style={{
+            transform: sidebarOpen ? "translateX(0)" : "translateX(-250px)",
+          }}
+        >
           <ul className="nav">
             <li className="nav-item nav-category">
               <span className="nav-link">Main</span>
@@ -201,14 +268,17 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage }) => {
           </ul>
         </nav>
 
-        {/* MAIN PANEL */}
-        <div className="container-fluid page-body-wrapper">
+        {/* ✅ PINALITAN ng cv-body-wrapper — walang template CSS na nag-o-override dito */}
+        <div
+          className="cv-body-wrapper"
+          style={{ marginLeft: sidebarOpen ? "250px" : "0px" }}
+        >
           {/* NAVBAR */}
           <nav className="navbar p-0 d-flex flex-row">
-            {/* Logo */}
-            <div className="text-center navbar-brand-wrapper d-flex align-items-center justify-content-start">
+            <div className="text-center navbar-brand-wrapper d-flex align-items-center">
+              {/* Logo */}
               <button
-                className="navbar-brand brand-logo me-5 border-0 bg-transparent"
+                className="navbar-brand brand-logo border-0 bg-transparent"
                 style={{ textDecoration: "none", cursor: "pointer" }}
                 onClick={() => router.push("/dashboard", "root")}
               >
@@ -248,9 +318,22 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage }) => {
                   </span>
                 </span>
               </button>
+
+              {/* HAMBURGER — kanan ng logo */}
+              <button
+                className="hamburger-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSidebarOpen((o) => !o);
+                }}
+                title="Toggle Sidebar"
+              >
+                <span></span>
+                <span></span>
+                <span></span>
+              </button>
             </div>
 
-            {/* Nav menu wrapper */}
             <div className="navbar-menu-wrapper flex-grow d-flex align-items-stretch">
               <ul className="navbar-nav w-100">
                 <li className="nav-item nav-search">
@@ -269,9 +352,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage }) => {
                 </li>
               </ul>
 
-              {/* Right nav */}
               <ul className="navbar-nav navbar-nav-right">
-                {/* Notifications */}
                 <li
                   className="nav-item dropdown"
                   onClick={(e) => {
@@ -305,7 +386,6 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage }) => {
                   )}
                 </li>
 
-                {/* Profile */}
                 <li
                   className="nav-item nav-profile dropdown"
                   onClick={(e) => {
@@ -376,7 +456,6 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage }) => {
             </div>
           </nav>
 
-          {/* Page content */}
           <div className="main-panel">
             <div className="content-wrapper">{children}</div>
             <footer className="footer">

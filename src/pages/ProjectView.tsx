@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useIonRouter } from "@ionic/react";
 import { useParams } from "react-router-dom";
 import Layout from "../components/Layout";
-import { getProject, deleteProject } from "../services/api";
+import {
+  getProject,
+  deleteProject,
+  incrementViewCount,
+  getRelatedProjects,
+  getPopularProjects,
+} from "../services/api";
 
 const ProjectView: React.FC = () => {
   const router = useIonRouter();
@@ -12,6 +18,8 @@ const ProjectView: React.FC = () => {
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [related, setRelated] = useState<any[]>([]);
+  const [popular, setPopular] = useState<any[]>([]);
 
   useEffect(() => {
     if (!localStorage.getItem("user")) router.push("/login", "root");
@@ -23,6 +31,17 @@ const ProjectView: React.FC = () => {
         const result = await getProject(Number(id));
         if (result.status === "success") {
           setProject(result.data);
+          await incrementViewCount(Number(id));
+
+          // Fetch recommendations
+          const [relatedResult, popularResult] = await Promise.all([
+            getRelatedProjects(Number(id), result.data.category_id),
+            getPopularProjects(),
+          ]);
+          if (relatedResult.status === "success")
+            setRelated(relatedResult.data || []);
+          if (popularResult.status === "success")
+            setPopular(popularResult.data || []);
         } else {
           setError(result.message || "Project not found.");
         }
@@ -49,9 +68,7 @@ const ProjectView: React.FC = () => {
     try {
       const url = `https://itservicesph.com/IT383/SULTAN/codevault/index.php/projects/download/${id}/${type}`;
       const response = await fetch(url);
-
       if (!response.ok) throw new Error("Download failed");
-
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -310,7 +327,11 @@ const ProjectView: React.FC = () => {
                       value: project.created_at
                         ? new Date(project.created_at).toLocaleDateString(
                             "en-US",
-                            { year: "numeric", month: "long", day: "numeric" },
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            },
                           )
                         : "—",
                     },
@@ -334,6 +355,23 @@ const ProjectView: React.FC = () => {
                         </span>
                       ),
                     },
+                    {
+                      label: "Views",
+                      value: (
+                        <span className="text-dark">
+                          <i
+                            data-feather="eye"
+                            style={{
+                              width: "14px",
+                              height: "14px",
+                              marginRight: "4px",
+                              color: "#6571ff",
+                            }}
+                          ></i>
+                          {project.view_count ?? 0} views
+                        </span>
+                      ),
+                    },
                   ].map(({ label, value }) => (
                     <li key={label} className="mb-3">
                       <small
@@ -350,6 +388,136 @@ const ProjectView: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* ===== RECOMMENDER SYSTEM ← BAGONG DAGDAG ===== */}
+
+        {/* You Might Also Like */}
+        {related.length > 0 && (
+          <div className="row mt-2">
+            <div className="col-12">
+              <h5 className="mb-3">
+                <i
+                  data-feather="thumbs-up"
+                  style={{
+                    width: "16px",
+                    height: "16px",
+                    marginRight: "6px",
+                    color: "#6571ff",
+                  }}
+                ></i>
+                You Might Also Like
+              </h5>
+            </div>
+            {related.map((p) => (
+              <div key={p.id} className="col-md-3 grid-margin">
+                <div
+                  className="card h-100"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => router.push(`/projects/${p.id}`, "forward")}
+                >
+                  <div className="card-body">
+                    <div className="d-flex align-items-center mb-2">
+                      <i
+                        data-feather="folder"
+                        style={{
+                          width: "20px",
+                          height: "20px",
+                          color: "#6571ff",
+                          marginRight: "8px",
+                        }}
+                      ></i>
+                      <span className="badge badge-primary">
+                        {p.category_name || "—"}
+                      </span>
+                    </div>
+                    <h6 className="mb-1" style={{ fontSize: ".9rem" }}>
+                      {p.title?.substring(0, 40)}
+                      {p.title?.length > 40 ? "…" : ""}
+                    </h6>
+                    <small className="text-muted d-block mb-2">
+                      {p.authors || "—"}
+                    </small>
+                    <small className="text-muted">
+                      <i
+                        data-feather="eye"
+                        style={{
+                          width: "12px",
+                          height: "12px",
+                          marginRight: "3px",
+                        }}
+                      ></i>
+                      {p.view_count ?? 0} views
+                    </small>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Most Popular */}
+        {popular.length > 0 && (
+          <div className="row mt-2">
+            <div className="col-12">
+              <h5 className="mb-3">
+                <i
+                  data-feather="trending-up"
+                  style={{
+                    width: "16px",
+                    height: "16px",
+                    marginRight: "6px",
+                    color: "#6571ff",
+                  }}
+                ></i>
+                Most Popular Projects
+              </h5>
+            </div>
+            {popular.map((p) => (
+              <div key={p.id} className="col-md-3 grid-margin">
+                <div
+                  className="card h-100"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => router.push(`/projects/${p.id}`, "forward")}
+                >
+                  <div className="card-body">
+                    <div className="d-flex align-items-center mb-2">
+                      <i
+                        data-feather="folder"
+                        style={{
+                          width: "20px",
+                          height: "20px",
+                          color: "#6571ff",
+                          marginRight: "8px",
+                        }}
+                      ></i>
+                      <span className="badge badge-primary">
+                        {p.category_name || "—"}
+                      </span>
+                    </div>
+                    <h6 className="mb-1" style={{ fontSize: ".9rem" }}>
+                      {p.title?.substring(0, 40)}
+                      {p.title?.length > 40 ? "…" : ""}
+                    </h6>
+                    <small className="text-muted d-block mb-2">
+                      {p.authors || "—"}
+                    </small>
+                    <small className="text-muted">
+                      <i
+                        data-feather="eye"
+                        style={{
+                          width: "12px",
+                          height: "12px",
+                          marginRight: "3px",
+                        }}
+                      ></i>
+                      {p.view_count ?? 0} views
+                    </small>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </Layout>
   );

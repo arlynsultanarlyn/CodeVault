@@ -1,6 +1,5 @@
-const BASE_URL = "http://192.168.1.88/CodeVault/index";
-const FILE_BASE = "http://192.168.1.88/CodeVault";
-
+const BASE_URL = "http://itservicesph.com/IT383/SULTAN/codevault/index.php";
+const FILE_BASE = "http://itservicesph.com/IT383/SULTAN/codevault";
 const getUserId = () => {
   try {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -280,6 +279,50 @@ export const uploadProfilePhoto = async (formData: FormData) => {
     const res = await fetch(`${BASE_URL}/api/upload_profile_photo`, {
       method: "POST",
       body: formData,
+    });
+    return await res.json();
+  } catch (error) {
+    throw error;
+  }
+};
+
+// ------ VIEW COUNT ------
+export const incrementViewCount = async (project_id: number) => {
+  try {
+    const res = await fetch(`${BASE_URL}/api/increment_view`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: getUserId(), project_id }),
+    });
+    return await res.json();
+  } catch (error) {
+    throw error;
+  }
+};
+
+// ------ RECOMMENDER SYSTEM ← BAGONG DAGDAG ------
+export const getRelatedProjects = async (
+  project_id: number,
+  category_id: number,
+) => {
+  try {
+    const res = await fetch(`${BASE_URL}/api/get_related_projects`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: getUserId(), project_id, category_id }),
+    });
+    return await res.json();
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const getPopularProjects = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/api/get_popular_projects`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: getUserId() }),
     });
     return await res.json();
   } catch (error) {
